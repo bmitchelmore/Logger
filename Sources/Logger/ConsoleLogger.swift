@@ -8,9 +8,9 @@ public final class ConsoleLogger: LoggerDestination, Sendable {
     private let render: @Sendable (LogEntry) -> String
     private let output: @Sendable (String) -> Void
 
-    init(format: String = defaultFormat, output: @escaping @Sendable (String) -> Void = { print($0) }) throws {
+    public init(format: String?, output: @escaping @Sendable (String) -> Void = { print($0) }) throws {
         self.lock = OSAllocatedUnfairLock()
-        self.render = try renderer(using: format)
+        self.render = try renderer(using: format ?? defaultFormat)
         self.output = output
     }
 

@@ -5,15 +5,15 @@ enum FileLoggerError: Error {
     case fileCreateFailed
 }
 
-final class FileLogger: LoggerDestination, @unchecked Sendable {
+final public class FileLogger: LoggerDestination, @unchecked Sendable {
     private let lock: OSAllocatedUnfairLock<Void>
     private let fileManager: FileManager
     private let encoder: JSONEncoder
-    private let console: ConsoleLogger
+    private let console: ConsoleLogger?
     private let url: URL
     private var fileExists: Bool!
 
-    init(fileManager: FileManager, console: ConsoleLogger, url: URL) {
+    public init(fileManager: FileManager = .default, console: ConsoleLogger? = nil, url: URL) {
         self.lock = OSAllocatedUnfairLock()
         self.fileManager = fileManager
         self.encoder = JSONEncoder()
@@ -22,7 +22,7 @@ final class FileLogger: LoggerDestination, @unchecked Sendable {
         self.fileExists = nil
     }
 
-    func log(_ entry: LogEntry) {
+    public func log(_ entry: LogEntry) {
         lock.withLock {
             do {
                 var data = try encoder.encode(entry)
@@ -47,7 +47,7 @@ final class FileLogger: LoggerDestination, @unchecked Sendable {
                     }
                 }
             } catch {
-                console.error("Failed to write log entry: \(error)")
+                console?.error("Failed to write log entry: \(error)")
             }
         }
     }
