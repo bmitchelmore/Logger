@@ -1,0 +1,32 @@
+{
+  "configurations" : [
+    {
+      "id" : "27B92B49-4FAC-40BC-8597-72248D2A751E",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:",
+          "identifier" : "Logger",
+          "name" : "Logger"
+        }
+      ]
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "LoggerTests",
+        "name" : "LoggerTests"
+      }
+    }
+  ],
+  "version" : 1
+}
