@@ -1,7 +1,6 @@
 import Foundation
+import LogFoundation
 import os
-
-private let defaultFormat = "[{{date}}] #{{level}} /{{module}}/{{file}}@{{function}}:{{line}} {{message}}"
 
 public final class ConsoleLogger: LoggerDestination, Sendable {
     private let lock: OSAllocatedUnfairLock<Void>
@@ -10,7 +9,7 @@ public final class ConsoleLogger: LoggerDestination, Sendable {
 
     public init(format: String? = nil, output: @escaping @Sendable (String) -> Void = { print($0) }) throws {
         self.lock = OSAllocatedUnfairLock()
-        self.render = try renderer(using: format ?? defaultFormat)
+        self.render = try BuildRenderer(using: format ?? DefaultFormat)
         self.output = output
     }
 

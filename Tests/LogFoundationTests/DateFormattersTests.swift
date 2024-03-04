@@ -1,15 +1,8 @@
-//
-//  FormatterStorageTests.swift
-//  
-//
-//  Created by Blair Mitchelmore on 2024-03-03.
-//
-
 import XCTest
-@testable import Logger
+@testable import LogFoundation
 
-final class FormatterStorageTests: XCTestCase {
-    private let formatters = FormatterStorage()
+final class DateFormattersTests: XCTestCase {
+    private let formatters = DateFormatterStorage()
     private let date = Date.distantPast
     
     func testGetDefault() throws {

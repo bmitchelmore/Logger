@@ -6,7 +6,8 @@
 //
 
 import Foundation
-@testable import Logger
+import Logger
+import LogFoundation
 
 final class TestLogger: LoggerDestination {
     let lock: AliasedLock<[LogEntry]>

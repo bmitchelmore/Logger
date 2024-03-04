@@ -6,63 +6,12 @@ enum FormatError: Error {
     case unknownField(String)
 }
 
-protocol DateFormatter {
-    func string(from date: Date) -> String
-}
+public let DefaultFormat = "[{{date}}] {{level}} /{{module}}/{{file}}@{{function}}:{{line}} {{message}}"
 
-extension Foundation.DateFormatter: DateFormatter {}
-extension ISO8601DateFormatter: DateFormatter {}
-
-final class FormatterStorage: @unchecked Sendable {
-    private let lock: OSAllocatedUnfairLock<[String?:DateFormatter]>
-    
-    init() {
-        lock = OSAllocatedUnfairLock(initialState: [:])
-    }
-    
-    private func generateFormatter(for identifier: String?) -> DateFormatter {
-        guard let identifier = identifier else {
-            return ISO8601DateFormatter()
-        }
-        
-        let formatter = Foundation.DateFormatter()
-        switch identifier {
-        case "short":
-            formatter.dateStyle = .short
-            formatter.timeStyle = .short
-        case "medium":
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .medium
-        case "long":
-            formatter.dateStyle = .long
-            formatter.timeStyle = .long
-        case "full":
-            formatter.dateStyle = .full
-            formatter.timeStyle = .full
-        default:
-            formatter.dateFormat = identifier
-        }
-        return formatter
-    }
-    
-    subscript(_ identifier: String?) -> DateFormatter {
-        get {
-            lock.withLock { formatters in
-                if let formatter = formatters[identifier] {
-                    return formatter
-                } else {
-                    let formatter = generateFormatter(for: identifier)
-                    formatters[identifier] = formatter
-                    return formatter
-                }
-            }
-        }
-    }
-}
-
-let formatters = FormatterStorage()
+let dateFormatters = DateFormatterStorage()
+let levelFormatters = LevelFormatterStorage()
 func extractor(for property: String) throws -> (LogEntry) -> String {
-    let parts = property.split(separator: "|", maxSplits: 2)
+    let parts = property.split(separator: "|", maxSplits: 1)
     let field: String
     let qualifier: String?
     if parts.count == 2, let first = parts.first, let last = parts.last {
@@ -78,9 +27,10 @@ func extractor(for property: String) throws -> (LogEntry) -> String {
     case "message":
         return \.message
     case "level":
-        return \.level.rawValue
+        let formatter = levelFormatters[qualifier]
+        return { formatter.string(from: $0.level) }
     case "date":
-        let formatter = formatters[qualifier]
+        let formatter = dateFormatters[qualifier]
         return { formatter.string(from: $0.date) }
     case "module":
         return \.module
@@ -116,7 +66,7 @@ fileprivate enum RenderStep {
     }
 }
 
-func renderer(using format: String) throws -> @Sendable (LogEntry) -> String {
+public func BuildRenderer(using format: String) throws -> @Sendable (LogEntry) -> String {
     var steps: [RenderStep] = []
     var state: ParseState = .none
     for c in format {
@@ -125,8 +75,17 @@ func renderer(using format: String) throws -> @Sendable (LogEntry) -> String {
             state = .openBrace(1)
         case ("{", .openBrace(1)):
             state = .openBrace(2)
-        case ("{", _):
-            throw FormatError.invalidFormat
+        case ("{", .openBrace(2)):
+            steps.append(.constant("{"))
+            state = .openBrace(2)
+        case ("{", .inBrace(let string)):
+            steps.append(.constant("{{\(string){"))
+            state = .none
+        case ("{", .closeBrace(let string, let count)):
+            steps.append(.constant("{{\(string)\(String(repeating: "}", count: count))"))
+            state = .none
+        case ("}", .none):
+            steps.append(.constant("}"))
         case ("}", .openBrace(2)):
             throw FormatError.invalidFormat
         case ("}", .inBrace(let s)):
@@ -143,10 +102,23 @@ func renderer(using format: String) throws -> @Sendable (LogEntry) -> String {
             state = .inBrace(s + String(c))
         case (_, .none):
             steps.append(.constant(String(c)))
+        case (_, .openBrace(1)):
+            steps.append(.constant("{\(c)"))
+            state = .none
         default:
             print("Invalid state: \(c) \(state)")
             throw FormatError.invalidFormat
         }
+    }
+    switch state {
+    case .none:
+        break
+    case .openBrace(let count):
+        steps.append(.constant(String(repeating: "{", count: count)))
+    case .inBrace(let string):
+        steps.append(.constant("{{\(string)"))
+    case .closeBrace(let string, let count):
+        steps.append(.constant("{{\(string)\(String(repeating: "}", count: count))"))
     }
     return { [steps] entry in
         var formatted = ""

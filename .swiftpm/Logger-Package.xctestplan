@@ -1,0 +1,54 @@
+{
+  "configurations" : [
+    {
+      "id" : "F8A5DD34-8CC5-47E7-9A65-443858BE6F25",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:",
+          "identifier" : "LogFoundation",
+          "name" : "LogFoundation"
+        },
+        {
+          "containerPath" : "container:",
+          "identifier" : "Logger",
+          "name" : "Logger"
+        },
+        {
+          "containerPath" : "container:",
+          "identifier" : "readlog",
+          "name" : "readlog"
+        }
+      ]
+    },
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:",
+      "identifier" : "LogReader",
+      "name" : "LogReader"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "LoggerTests",
+        "name" : "LoggerTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "LogFoundationTests",
+        "name" : "LogFoundationTests"
+      }
+    }
+  ],
+  "version" : 1
+}

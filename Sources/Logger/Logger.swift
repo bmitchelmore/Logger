@@ -1,4 +1,5 @@
 import Foundation
+import LogFoundation
 import os
 
 public protocol LoggerDestination: Sendable {
