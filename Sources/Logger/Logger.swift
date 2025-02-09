@@ -41,7 +41,7 @@ extension LoggerDestination {
         function: String = #function,
         line: UInt = #line
     ) {
-        log(.debug, message())
+        log(.debug, message(), fileID: fileID, function: function, line: line)
     }
     
     public func info(
@@ -50,7 +50,7 @@ extension LoggerDestination {
         function: String = #function,
         line: UInt = #line
     ) {
-        log(.info, message())
+        log(.info, message(), fileID: fileID, function: function, line: line)
     }
     
     public func warn(
@@ -59,7 +59,7 @@ extension LoggerDestination {
         function: String = #function,
         line: UInt = #line
     ) {
-        log(.warn, message())
+        log(.warn, message(), fileID: fileID, function: function, line: line)
     }
     
     public func error(
@@ -68,7 +68,7 @@ extension LoggerDestination {
         function: String = #function,
         line: UInt = #line
     ) {
-        log(.error, message())
+        log(.error, message(), fileID: fileID, function: function, line: line)
     }
     
     public func fatal(
@@ -77,7 +77,7 @@ extension LoggerDestination {
         function: String = #function,
         line: UInt = #line
     ) {
-        log(.fatal, message())
+        log(.fatal, message(), fileID: fileID, function: function, line: line)
     }
 }
 
